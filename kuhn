@@ -1,0 +1,157 @@
+#include <iostream>
+
+#include <vector>
+
+#include <cstring>
+using namespace std;
+
+
+// Константа для максимального количества вершин
+
+const int MAXN = 1000;
+
+
+
+// Структура для графа
+
+struct Graph {
+
+	int numVerticesLeft;  // Количество вершин в левой доле
+
+	int numVerticesRight; // Количество вершин в правой доле
+
+	vector<int> adj[MAXN]; // Списки смежности для вершин левой доли
+
+
+
+	// Конструктор для графа
+
+	Graph(int left, int right) : numVerticesLeft(left), numVerticesRight(right) {}
+
+
+
+	// Метод для добавления ребра
+
+	void addEdge(int u, int v) {
+
+		adj[u].push_back(v);
+
+	}
+
+};
+
+
+
+// Класс для алгоритма Куна
+
+class KuhnAlgorithm {
+
+private:
+
+	Graph& graph; // Ссылка на граф
+
+	int match[MAXN]; // Массив для хранения паросочетаний (match[v] = u, если вершина v из правой доли связана с вершиной u из левой доли)
+
+	bool visited[MAXN]; // Массив для отметки посещенных вершин при поиске увеличивающейся цепи
+
+
+
+	// Рекурсивная функция для поиска увеличивающейся цепи
+
+	bool tryKuhn(int v) {
+
+		if (visited[v]) return false; // Если вершина уже посещена, возвращаем false
+
+		visited[v] = true; // Отмечаем вершину как посещенную
+
+
+
+		for (int to : graph.adj[v]) { // Проходим по всем смежным вершинам
+
+			// Если вершина не занята или можем найти увеличивающую цепь
+
+			if (match[to] == -1 || tryKuhn(match[to])) {
+
+				match[to] = v; // Устанавливаем паросочетание
+
+				return true; // Возвращаем true, так как нашли увеличивающуюся цепь
+
+			}
+
+		}
+
+		return false; // Не нашли увеличивающейся цепи
+
+	}
+
+
+
+public:
+
+	// Конструктор для алгоритма Куна
+
+	KuhnAlgorithm(Graph& g) : graph(g) {
+
+	memset(match, -1, sizeof(match)); // Инициализируем массив match значением -1
+
+	}
+
+
+
+	// Метод для выполнения алгоритма Куна и поиска максимального паросочетания
+
+	int maximumMatching() {
+
+		int matchingSize = 0; // Размер максимального паросочетания
+
+		for (int v = 0; v < graph.numVerticesLeft; ++v) { // Проходим по всем вершинам левой доли
+
+			memset(visited, false, sizeof(visited)); // Очищаем массив посещений
+
+			if (tryKuhn(v)) { // Если удалось найти увеличивающуюся цепь
+
+				matchingSize++; // Увеличиваем размер паросочетания
+
+			}
+
+		}
+
+		return matchingSize; // Возвращаем размер максимального паросочетания
+
+	}
+
+};
+
+
+
+int main() {
+
+	int left = 3, right = 3; // Количество вершин в левой и правой долях
+
+	Graph g(left, right); // Создаем граф
+
+	g.addEdge(0, 0); // Добавляем ребро между вершинами 0 и 0
+
+	g.addEdge(0, 1); // Добавляем ребро между вершинами 0 и 1
+
+	g.addEdge(1, 1); // Добавляем ребро между вершинами 1 и 1
+
+	g.addEdge(1, 2); // Добавляем ребро между вершинами 1 и 2
+
+	g.addEdge(2, 2); // Добавляем ребро между вершинами 2 и 2
+
+
+
+	KuhnAlgorithm kuhn(g); // Создаем объект алгоритма Куна
+
+	int maxMatching = kuhn.maximumMatching(); // Находим максимальное паросочетание
+
+
+
+	cout << "Maximum Matching: " << maxMatching << endl; // Выводим размер максимального паросочетания
+
+
+
+	return 0;
+
+}
